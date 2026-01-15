@@ -276,4 +276,404 @@
                     </button>
                     <button onclick="printMedicalReport()" id="btn-print" class="hidden flex-1 bg-slate-700 text-white py-2 rounded border border-slate-600 text-xs font-bold flex justify-center items-center gap-1">
                         <span>🖨️</span> طباعة / PDF
-                 
+                    </button>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 mb-4">
+                <h3 class="text-xs font-bold text-slate-400 uppercase mb-4">المسار المزاجي (Mood Trajectory)</h3>
+                <div id="chart-mood" class="h-32 w-full flex items-end justify-between gap-1"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                 <button onclick="runForensicAnalysis()" class="bg-white border p-3 rounded-xl text-xs font-bold text-slate-600">تحليل يومي (Forensic)</button>
+                 <button onclick="generateWeeklyPlan()" class="bg-white border p-3 rounded-xl text-xs font-bold text-emerald-600">خطة تعافي (IPSRT)</button>
+            </div>
+            <div id="extra-output" class="hidden bg-slate-50 p-3 rounded border text-sm leading-loose whitespace-pre-wrap mb-4"></div>
+        </div>
+
+        <!-- 4. NEW: CHAT ROOM (LIVE DETECTIVE) -->
+        <div id="view-chat" class="view-section">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden chat-container">
+                <div class="bg-indigo-600 p-3 flex items-center justify-between text-white">
+                    <div class="flex items-center gap-2">
+                        <span>🕵️‍♂️</span>
+                        <h3 class="font-bold text-sm">غرفة التحقيق المباشر</h3>
+                    </div>
+                    <span class="text-[10px] bg-indigo-800 px-2 py-1 rounded">متصل بالأرشيف</span>
+                </div>
+                
+                <div id="chat-messages" class="chat-messages bg-slate-50">
+                    <div class="message-bubble msg-ai">
+                        مرحباً. أنا المحلل الجنائي الخاص بك. لدي وصول كامل لملف القضية (كل تاريخك المسجل).<br>
+                        يمكنك سؤالي عن أنماط، مقارنات بين الشهور، أو علاقة أحداث معينة (مثل العمل، الإجازة) بالمزاج.
+                    </div>
+                </div>
+                
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="اسأل المحلل عن أي نمط..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+                    <button onclick="sendChatMessage()" class="bg-indigo-600 text-white rounded-lg px-4 py-2 text-sm font-bold shadow hover:bg-indigo-700">إرسال</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. HISTORY TIMELINE -->
+        <div id="view-history" class="view-section">
+            <h2 class="text-lg font-bold mb-4">سجل الأيام (History)</h2>
+            <div id="history-container" class="space-y-4 pb-10"></div>
+        </div>
+
+        <!-- 6. PRIVATE COUNTER -->
+        <div id="view-private" class="view-section">
+            <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-lg mb-5">
+                <h2 class="text-lg font-bold mb-1">المساحة الخاصة (R-Tracker)</h2>
+                <p class="text-slate-400 text-xs mb-4">Separate Logic. No AI Analysis.</p>
+                <div class="flex flex-col items-center justify-center py-4">
+                    <div class="flex items-center gap-6">
+                        <button class="counter-btn bg-slate-700 text-white hover:bg-slate-600" onclick="updateCounter(-1)">-</button>
+                        <span id="r_counter_display" class="font-mono font-bold text-4xl w-16 text-center text-emerald-400">0</span>
+                        <button class="counter-btn bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-900/50" onclick="updateCounter(1)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="saveData()" class="bg-slate-800 text-white py-3 rounded-xl text-sm font-bold shadow-md active:scale-95 transition">
+                    حفظ العداد
+                </button>
+                <button onclick="archivePrivateLog()" id="btn-private-archive" class="bg-emerald-100 text-emerald-800 py-3 rounded-xl text-sm font-bold shadow-sm active:scale-95 transition">
+                    أرشفة السجل الخاص ☁️
+                </button>
+            </div>
+        </div>
+
+        <!-- 7. SETTINGS -->
+        <div id="view-settings" class="view-section">
+            <div class="bg-white p-4 rounded-xl shadow-sm mb-4">
+                <label class="block text-xs font-bold text-slate-500 mb-2">Gemini API Key</label>
+                <input type="password" id="api_key" class="w-full p-3 bg-slate-50 border rounded-xl text-sm outline-none">
+                <button onclick="autoDiscover()" class="w-full bg-indigo-600 text-white py-2 rounded-lg text-xs font-bold mt-3">⚡ ربط المحرك</button>
+                <p id="discover-log" class="text-[10px] text-center mt-2 h-4"></p>
+            </div>
+            
+            <div class="bg-white p-4 rounded-xl shadow-sm mb-4 border border-indigo-100">
+                <h3 class="text-xs font-bold text-indigo-900 mb-3">النسخ الاحتياطي والاستعادة</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="exportToCSV()" class="w-full bg-slate-200 text-slate-700 py-3 rounded-xl font-bold text-xs flex justify-center items-center gap-2 hover:bg-slate-300 transition">
+                        <span>📥</span> تصدير (Backup)
+                    </button>
+                    
+                    <button onclick="document.getElementById('import-file').click()" class="w-full bg-indigo-100 text-indigo-700 py-3 rounded-xl font-bold text-xs flex justify-center items-center gap-2 hover:bg-indigo-200 transition">
+                        <span>📤</span> استيراد (Restore)
+                    </button>
+                    <input type="file" id="import-file" accept=".csv" class="hidden" onchange="importFromCSV(this)">
+                </div>
+            </div>
+            <p class="text-center text-[10px] text-slate-300 mt-6">v6.9 Live Detective</p>
+        </div>
+    </main>
+    <!-- NAVIGATION (7 Buttons) -->
+    <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur border-t border-slate-200 flex justify-around items-center h-16 z-50 pb-safe px-1">
+        <button onclick="nav('dashboard')" class="nav-btn active flex flex-col items-center w-full h-full justify-center text-slate-400"><span class="text-xl">🏠</span></button>
+        <button onclick="nav('entry')" class="nav-btn flex flex-col items-center w-full h-full justify-center text-slate-400"><span class="text-xl">📝</span></button>
+        <button onclick="nav('reports')" class="nav-btn flex flex-col items-center w-full h-full justify-center text-slate-400"><span class="text-xl">📈</span></button>
+        <button onclick="nav('chat')" class="nav-btn flex flex-col items-center w-full h-full justify-center text-slate-400"><span class="text-xl">💬</span></button>
+        <button onclick="nav('history')" class="nav-btn flex flex-col items-center w-full h-full justify-center text-slate-400"><span class="text-xl">📅</span></button>
+        <button onclick="nav('private')" class="nav-btn flex flex-col items-center w-full h-full justify-center text-slate-400"><span class="text-xl">🔒</span></button>
+        <button onclick="nav('settings')" class="nav-btn flex flex-col items-center w-full h-full justify-center text-slate-400"><span class="text-xl">⚙️</span></button>
+    </nav>
+
+    <!-- HIDDEN PRINT TEMPLATE -->
+    <div id="print-template">
+        <div class="medical-header">
+            <h1 class="medical-title">Medical Status Report</h1>
+            <p class="medical-subtitle">Mixed Bipolar Trajectory Analysis</p>
+            <p id="print-date" class="text-sm font-mono mt-2 text-slate-500"></p>
+        </div>
+        <div class="medical-body" id="print-content"></div>
+        <div class="medical-footer">
+            <p>Generated by PsychoTrack v6.9 - Private & Confidential Clinical Data.</p>
+        </div>
+    </div>
+
+    <script>
+        const STORE_KEY = 'psychotrack_v6_data';
+        const SETTINGS_KEY = 'psychotrack_v6_settings';
+        const DEPRESSION_SYMPTOMS = [
+            {id: 'sym_motivation', l: 'نقص الحافز والشعور بالفراغ'},
+            {id: 'sym_pleasure', l: 'فقدان المتعة'},
+            {id: 'sym_lethargy', l: 'الخمول والكسل وصعوبة الحركة'},
+            {id: 'sym_conversation', l: 'صعوبة فتح مواضيع/كلام'},
+            {id: 'sym_brain_squeeze', l: 'عصر الدماغ للتفكير + قلق'},
+            {id: 'sym_interest', l: 'فقدان الاهتمام بكل شيء'},
+            {id: 'sym_stomach', l: 'شعور سيء في فم المعدة'},
+            {id: 'sym_guilt', l: 'شعور بالذنب وعدم القيمة'}
+        ];
+        const getLocalToday = () => new Date().toLocaleDateString('en-CA');
+        let State = {
+            today: getLocalToday(),
+            data: JSON.parse(localStorage.getItem(STORE_KEY)) || {},
+            settings: JSON.parse(localStorage.getItem(SETTINGS_KEY)) || { apiKey: '', gasUrl: '', docId: '', model: 'gemini-1.5-flash' }
+        };
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('date-badge').innerText = State.today;
+            renderSymptoms();
+            loadSettings();
+            checkDailyLock(); 
+            updateDashboardUI();
+            validateForm(); 
+        });
+
+        // === 1. CHAT MODULE (LIVE DETECTIVE) ===
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if(!msg) return;
+            
+            // UI Update (User)
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.innerHTML += `<div class="message-bubble msg-user">${msg}</div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Loading Indicator
+            const loadingId = 'load_' + Date.now();
+            chatBox.innerHTML += `<div id="${loadingId}" class="message-bubble msg-ai">جاري البحث في الملفات... ⏳</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // 1. Prepare Full History Context (COMPACT MODE)
+            // We strip unnecessary data to fit context window
+            const allDates = Object.keys(State.data).sort();
+            const fullHistory = allDates.map(d => {
+                const e = State.data[d];
+                // Only send key forensic data
+                return `[${d}]: Mood:${e.mood_state}, Sleep:${e.sleep_hours}, Note:${e.forensic_notes ? e.forensic_notes.substring(0, 50) : 'None'}`;
+            }).join('\n');
+
+            // 2. Chat Persona
+            const CHAT_SYSTEM_PROMPT = `
+            ROLE: Interactive Forensic Psychiatrist.
+            CONTEXT: You have access to the patient's FULL history log below.
+            
+            DATA LOG (CSV FORMAT):
+            ${fullHistory}
+            
+            INSTRUCTIONS:
+            - Answer the patient's specific question by SEARCHING the Data Log.
+            - If they ask about "Vacation", look for days with notes containing similar keywords.
+            - If they ask about patterns, compare dates.
+            - Be concise, supportive, and analytical.
+            - REPLY IN ARABIC ONLY.
+            `;
+
+            try {
+                const response = await callGeminiChat(msg, CHAT_SYSTEM_PROMPT);
+                document.getElementById(loadingId).innerText = response;
+            } catch(e) {
+                document.getElementById(loadingId).innerText = "حدث خطأ في الاتصال.";
+            }
+        }
+
+        async function callGeminiChat(userMsg, systemMsg) {
+            if (!State.settings.apiKey) return "Error: API Key Missing.";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${State.settings.model}:generateContent?key=${State.settings.apiKey}`;
+            const payload = {
+                contents: [
+                    { role: "user", parts: [{ text: systemMsg + "\n\nUSER QUESTION: " + userMsg }] }
+                ]
+            };
+            const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            const json = await res.json();
+            return json.candidates?.[0]?.content?.parts?.[0]?.text || "Error.";
+        }
+
+        // === 2. STRICT VALIDATION ===
+        function validateForm() {
+            let isValid = true;
+            const btn = document.getElementById('save-btn');
+            const cog = document.getElementById('cognitive_state').value;
+            const groupCog = document.getElementById('group-cognitive');
+            if (!cog) { isValid = false; } else { groupCog.querySelector('.error-msg').style.display = 'none'; groupCog.classList.remove('input-error'); }
+            const mood = document.getElementById('mood_state').value;
+            const groupMood = document.getElementById('group-mood');
+            if (!mood) { isValid = false; } else { groupMood.querySelector('.error-msg').style.display = 'none'; groupMood.classList.remove('input-error'); }
+            const sleepInput = document.getElementById('sleep_hours');
+            const sleepVal = parseFloat(sleepInput.value);
+            const sleepError = document.getElementById('sleep-error');
+            if (sleepInput.value === '' || isNaN(sleepVal) || sleepVal < 0 || sleepVal > 24) {
+                isValid = false;
+                if(sleepInput.value !== '') { sleepInput.classList.add('input-error'); sleepError.style.display = 'block'; }
+            } else { sleepInput.classList.remove('input-error'); sleepError.style.display = 'none'; }
+            if (isValid) { btn.disabled = false; btn.classList.remove('btn-disabled'); btn.innerHTML = '<span>حفظ التقرير الطبي</span>'; } 
+            else { btn.disabled = true; btn.classList.add('btn-disabled'); btn.innerHTML = '<span>🔒 أكمل البيانات للحفظ</span>'; }
+        }
+
+        // === 3. INVESTIGATION BOARD ===
+        function renderInvestigationBoard() {
+            const container = document.getElementById('investigation-timeline');
+            const dates = Object.keys(State.data).sort().slice(-14);
+            if(dates.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 text-center py-4">لا توجد بيانات.. قم بتحميل ملف القضية (Backup)</p>';
+                document.getElementById('investigation-status').innerText = 'الحالة: 🔴 ذاكرة فارغة';
+                return;
+            }
+            document.getElementById('investigation-status').innerText = `الحالة: 🟢 جاهز للتحليل (${dates.length} أيام)`;
+            let html = dates.map(date => {
+                const e = State.data[date];
+                const mood = e.mood_state || '?';
+                const sleep = e.sleep_hours || '-';
+                const note = e.forensic_notes ? e.forensic_notes.substring(0, 30) + '...' : '';
+                let moodColor = 'text-emerald-400';
+                let alertClass = '';
+                if(mood.includes('Depression')) { moodColor = 'text-red-400'; alertClass = 'alert'; }
+                if(mood.includes('Hypomania')) { moodColor = 'text-amber-400'; }
+                return `<div class="timeline-item ${alertClass}"><div class="flex justify-between"><span class="font-mono font-bold text-indigo-200">${date}</span><span class="${moodColor} font-bold">${mood}</span></div><div class="text-[10px] text-slate-400 flex gap-2"><span>💤 ${sleep}h</span><span>🧠 ${e.cognitive_state || '-'}</span></div>${note ? `<div class="text-[10px] text-slate-500 italic mt-1">"${note}"</div>` : ''}</div>`;
+            }).join('');
+            container.innerHTML = html;
+        }
+
+        // === 4. UI & HISTORY ===
+        function renderHistory() {
+            const container = document.getElementById('history-container');
+            const dates = Object.keys(State.data).sort().reverse(); 
+            if (dates.length === 0) return container.innerHTML = '<p class="text-center text-slate-400 text-sm mt-10">لا توجد سجلات.</p>';
+            const firstDate = new Date(dates[dates.length - 1]);
+            let html = dates.map(dateKey => {
+                const entry = State.data[dateKey];
+                const currentDate = new Date(dateKey);
+                const dayNumber = Math.ceil(Math.abs(currentDate - firstDate) / (1000 * 60 * 60 * 24)) + 1;
+                let borderColor = 'border-slate-200'; let bgTint = 'bg-white'; let moodLabel = 'غير محدد';
+                if (entry.mood_state) {
+                    if (entry.mood_state.includes('Depression')) { borderColor = 'border-red-400'; bgTint = 'bg-red-50'; moodLabel = 'اكتئاب'; }
+                    else if (entry.mood_state === 'Stable') { borderColor = 'border-emerald-400'; bgTint = 'bg-emerald-50'; moodLabel = 'مستقر'; }
+                    else if (entry.mood_state.includes('Hypomania')) { borderColor = 'border-amber-400'; bgTint = 'bg-amber-50'; moodLabel = 'هوس'; }
+                    else if (entry.mood_state === 'Fluctuating') { borderColor = 'border-purple-400'; bgTint = 'bg-purple-50'; moodLabel = 'متردد'; }
+                }
+                return `<div class="history-card ${bgTint} ${borderColor} border p-4 rounded-xl shadow-sm cursor-pointer relative" onclick="this.classList.toggle('expanded')"><div class="flex justify-between items-start mb-2"><div><span class="bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded-full mb-1 inline-block">اليوم ${dayNumber}</span><h4 class="font-bold text-slate-700 text-sm">${dateKey}</h4></div><div class="text-left"><span class="text-xs font-bold block ${borderColor.replace('border-', 'text-')}">${moodLabel}</span><span class="text-[10px] text-slate-500">نوم: ${entry.sleep_hours || '-'}س</span></div></div><div class="text-xs text-slate-600"><span class="font-bold">الحالة الذهنية:</span> ${entry.cognitive_state || '-'}</div><div class="note-content"><strong>الملاحظات الكاملة:</strong><br>${entry.forensic_notes || 'لا يوجد'}</div></div>`;
+            }).join('');
+            container.innerHTML = html;
+        }
+
+        // === 5. HEATMAP & NAV ===
+        function renderHeatmap() {
+            const container = document.getElementById('heatmap-grid');
+            const now = new Date();
+            const year = now.getFullYear(); const month = now.getMonth(); 
+            const monthNames = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+            document.getElementById('heatmap-month-label').innerText = `${monthNames[month]} ${year}`;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            let html = '';
+            for(let i=0; i<firstDayIndex; i++) html += '<div class="heatmap-day bg-transparent"></div>';
+            for(let d=1; d<=daysInMonth; d++) {
+                const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const entry = State.data[dateKey];
+                let bgClass = 'bg-slate-100 text-slate-300';
+                if(entry && entry.mood_state) {
+                    if(entry.mood_state.includes('Pure_Depression')) bgClass = 'bg-red-500 text-white';
+                    else if(entry.mood_state.includes('Tend_Depression')) bgClass = 'bg-red-300 text-white';
+                    else if(entry.mood_state.includes('Tend_Hypomania')) bgClass = 'bg-amber-400 text-white';
+                    else if(entry.mood_state === 'Stable') bgClass = 'bg-emerald-400 text-white';
+                    else if(entry.mood_state === 'Fluctuating') bgClass = 'bg-purple-400 text-white';
+                }
+                html += `<div class="heatmap-day ${bgClass}" title="${dateKey}">${d}</div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function nav(id) {
+            document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
+            document.getElementById('view-'+id).classList.add('active');
+            if(id==='dashboard' || id==='private') updateDashboardUI();
+            if(id==='history') renderHistory();
+            if(id==='reports') renderInvestigationBoard(); 
+            if(id==='entry') validateForm(); 
+        }
+
+        // ... Standard UI Helpers ...
+        function renderSymptoms() { document.getElementById('symptoms-list').innerHTML = DEPRESSION_SYMPTOMS.map(s => `<div><div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-slate-600">${s.l}</span><span id="val_${s.id}" class="text-xs font-bold text-red-600">0</span></div><input type="range" id="${s.id}" min="0" max="4" value="0" class="symptom-slider" oninput="document.getElementById('val_${s.id}').innerText = this.value"></div>`).join(''); }
+        function selectOption(type, value, btnElement) { const parent = btnElement.parentElement; parent.querySelectorAll('.select-btn').forEach(b => b.classList.remove('selected')); btnElement.classList.add('selected'); document.getElementById(`${type}_state`).value = value; validateForm(); }
+        function updateCounter(change) { const display = document.getElementById('r_counter_display'); let current = parseInt(display.innerText) || 0; current += change; if (current < 0) current = 0; display.innerText = current; State.temp_r_count = current; }
+        function setMoodState(state, btn) { selectOption('mood', state, btn); const depSection = document.getElementById('depression-section'); if (state === 'Pure_Depression' || state === 'Fluctuating') { depSection.classList.remove('hidden-section'); } else { depSection.classList.add('hidden-section'); document.getElementById('depression_severity').value = ''; DEPRESSION_SYMPTOMS.forEach(s => { const el = document.getElementById(s.id); if(el) { el.value = 0; document.getElementById('val_'+s.id).innerText = '0'; } }); } validateForm(); }
+        function selectSeverity(level, btn) { const parent = btn.parentElement; parent.querySelectorAll('.select-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); document.getElementById('depression_severity').value = level; }
+        function checkDailyLock() {
+            const entry = State.data[State.today]; const btn = document.getElementById('save-btn'); const banner = document.getElementById('integrity-banner');
+            if (entry) {
+                restoreSelection('cognitive', entry.cognitive_state); restoreSelection('mood', entry.mood_state);
+                document.getElementById('r_counter_display').innerText = entry.r_count || 0; State.temp_r_count = entry.r_count || 0;
+                if (entry.mood_state === 'Pure_Depression' || entry.mood_state === 'Fluctuating') {
+                    document.getElementById('depression-section').classList.remove('hidden-section');
+                    const sevBtns = document.querySelectorAll(`[onclick*="selectSeverity('${entry.depression_severity}'"]`);
+                    if(sevBtns.length) sevBtns[0].classList.add('selected'); document.getElementById('depression_severity').value = entry.depression_severity || '';
+                    DEPRESSION_SYMPTOMS.forEach(s => { const val = entry[s.id] || 0; document.getElementById(s.id).value = val; document.getElementById('val_'+s.id).innerText = val; });
+                }
+                document.getElementById('sleep_hours').value = entry.sleep_hours || ''; document.getElementById('sleep_quality').value = entry.sleep_quality || 'Normal'; document.getElementById('forensic_notes').value = entry.forensic_notes || '';
+                document.querySelectorAll('.select-btn, input, select').forEach(el => { if (el.id !== 'forensic_notes') { el.classList.add('locked-field'); el.disabled = true; } });
+                banner.classList.remove('hidden'); btn.innerHTML = '<span>تحديث الملاحظات فقط</span>'; btn.classList.replace('bg-clinical-primary', 'bg-slate-600'); btn.disabled = false; btn.classList.remove('btn-disabled'); 
+            } else { banner.classList.add('hidden'); }
+        }
+        function restoreSelection(type, val) { if (!val) return; document.getElementById(`${type}_state`).value = val; const el = document.querySelector(`#${type}-options div[onclick*="'${val}'"]`); if (el) el.classList.add('selected'); }
+        function updateDashboardUI() {
+            renderHeatmap(); renderHistory(); renderInvestigationBoard();
+            const keys = Object.keys(State.data).sort(); const recent = keys.slice(-14); const lastKey = keys[keys.length-1];
+            if(lastKey) { const d = State.data[lastKey]; document.getElementById('dash-dominant-state').innerText = d.mood_state || '-'; document.getElementById('dash-sleep-avg').innerText = d.sleep_hours || '-'; document.getElementById('r_counter_display').innerText = d.r_count || 0; }
+            const moodMap = {'Pure_Depression': -2, 'Tend_Depression': -1, 'Stable': 0, 'Fluctuating': 0.5, 'Tend_Hypomania': 1};
+            const chartMood = document.getElementById('chart-mood');
+            chartMood.innerHTML = recent.map(k => { const m = State.data[k].mood_state; const val = moodMap[m] !== undefined ? moodMap[m] : 0; const color = val < 0 ? '#ef4444' : (val > 0 ? '#f59e0b' : '#3b82f6'); const height = Math.abs(val) * 40 + 20; return `<div style="width:10%; height:${height}%; background:${color}; border-radius:4px; opacity:0.8;" title="${k}: ${m}"></div>`; }).join('');
+            const chartR = document.getElementById('chart-r');
+            chartR.innerHTML = recent.map(k => { const r = State.data[k].r_count || 0; const h = Math.min(r * 25, 100); return `<div style="width:10%; height:${h}%; background:${r>0?'#10b981':'#e2e8f0'}; border-radius:4px;" title="${k}: ${r}"></div>`; }).join('');
+        }
+
+        // === 6. SAVE & RESTORE ===
+        function saveData() {
+            const cog = document.getElementById('cognitive_state').value; const mood = document.getElementById('mood_state').value; const sleep = parseFloat(document.getElementById('sleep_hours').value); const isUpdate = !!State.data[State.today];
+            if (!isUpdate && (!cog || !mood || isNaN(sleep) || sleep < 0 || sleep > 24)) { alert('عذراً، البيانات غير مكتملة أو غير منطقية.'); return; }
+            try {
+                let data = isUpdate ? { ...State.data[State.today] } : { timestamp: new Date().toISOString() };
+                data.id = State.today; data.date_str = new Date().toLocaleString('ar-EG'); data.forensic_notes = document.getElementById('forensic_notes').value; data.r_count = State.temp_r_count !== undefined ? State.temp_r_count : (parseInt(document.getElementById('r_counter_display').innerText) || 0);
+                if (!isUpdate) {
+                    data.cognitive_state = document.getElementById('cognitive_state').value; data.mood_state = document.getElementById('mood_state').value; data.sleep_hours = document.getElementById('sleep_hours').value; data.sleep_quality = document.getElementById('sleep_quality').value;
+                    if (data.mood_state === 'Pure_Depression' || data.mood_state === 'Fluctuating') { data.depression_severity = document.getElementById('depression_severity').value; DEPRESSION_SYMPTOMS.forEach(s => { data[s.id] = parseInt(document.getElementById(s.id).value) || 0; }); }
+                }
+                State.data[State.today] = data; localStorage.setItem(STORE_KEY, JSON.stringify(State.data)); syncToCloud('save_entry', data);
+                alert('تم الحفظ'); checkDailyLock(); updateDashboardUI();
+            } catch(e) { alert('خطأ في الحفظ'); console.error(e); }
+        }
+        function exportToCSV() { const items = Object.values(State.data); if(!items.length) return alert('لا توجد بيانات'); const keys = Object.keys(items[0]); let csv = keys.join(',')+'\n'; items.forEach(r => { csv += keys.map(k => `"${(r[k]||'').toString().replace(/"/g, '""')}"`).join(',') + '\n'; }); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob(["\uFEFF"+csv], {type:'text/csv'})); link.download = `psychotrack_casefile_${State.today}.csv`; link.click(); }
+        function importFromCSV(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const text = e.target.result; const rows = text.split('\n').filter(r => r.trim() !== ''); const headers = rows[0].split(',').map(h => h.replace(/^"|"$/g, '').trim()); let count = 0; for (let i = 1; i < rows.length; i++) { const values = rows[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g); if (!values) continue; let obj = {}; headers.forEach((h, index) => { let val = values[index] ? values[index].replace(/^"|"$/g, '').replace(/""/g, '"') : ''; obj[h] = val; }); let key = obj.id; if (!key && obj.timestamp) key = new Date(obj.timestamp).toLocaleDateString('en-CA'); if (key && key.match(/^\d{4}-\d{2}-\d{2}$/)) { if(obj.r_count) obj.r_count = parseInt(obj.r_count); DEPRESSION_SYMPTOMS.forEach(s => { if(obj[s.id]) obj[s.id] = parseInt(obj[s.id]); }); State.data[key] = obj; count++; } } localStorage.setItem(STORE_KEY, JSON.stringify(State.data)); alert(`تم استدعاء ${count} يوم من ملف القضية.`); location.reload(); } catch (err) { alert('خطأ في الملف.'); } }; reader.readAsText(file); }
+
+        // === 7. CORE AI (HIERARCHY REPORT) ===
+        async function callGemini(userPrompt) {
+            if (!State.settings.apiKey) return "Error: API Key Missing.";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${State.settings.model}:generateContent?key=${State.settings.apiKey}`;
+            const SYSTEM_PERSONA = `ROLE: Expert Forensic Psychiatrist. PROTOCOL: EVIDENCE HIERARCHY (1. Sleep=Fact, 2. Cognitive, 3. Mood=Perception). IF Sleep < 4h & Mood='Stable' -> DETECT HYPOMANIA. Output in Arabic.`;
+            try {
+                const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: SYSTEM_PERSONA + "\n" + userPrompt }] }] }) });
+                const json = await res.json(); return json.candidates?.[0]?.content?.parts?.[0]?.text || "Error.";
+            } catch (e) { return "Connection Error."; }
+        }
+        function getClinicalContext(historyData) { return historyData.map(entry => { const { r_count, ...clinicalOnly } = entry; return clinicalOnly; }); }
+        
+        async function generateMasterReport() {
+            const out = document.getElementById('master-output'); out.classList.remove('hidden'); out.innerText = 'جاري تحليل الأدلة (بروتوكول الهرمية)...';
+            const rawHistory = Object.keys(State.data).sort().slice(-14).map(k => ({date: k, ...State.data[k]}));
+            if(rawHistory.length < 2) { out.innerText = 'البيانات غير كافية.'; return; }
+            const cleanHistory = getClinicalContext(rawHistory);
+            document.getElementById('report-scope').innerText = `Evidence: ${cleanHistory.length} Days`;
+            const text = await callGemini(`STATUS: Investigation Board. CHAIN: ${JSON.stringify(cleanHistory)}. MISSION: Apply Hierarchy. Compare Sleep vs Mood.`);
+            out.innerText = text; State.lastReport = text; document.getElementById('btn-archive').classList.remove('hidden'); document.getElementById('btn-print').classList.remove('hidden');
+        }
+
+        async function triggerImmediateCBT() { const entry = State.data[State.today]; if (!entry) return alert('احفظ أولاً'); const { r_count, ...cleanEntry } = entry; document.getElementById('cbt-result').classList.remove('hidden'); document.getElementById('cbt-result').innerText = await callGemini(`Immediate Intervention. State: ${JSON.stringify(cleanEntry)}`); }
+        async function runForensicAnalysis() { const entry = State.data[State.today]; if (!entry) return alert('احفظ أولاً'); const { r_count, ...cleanEntry } = entry; document.getElementById('extra-output').classList.remove('hidden'); document.getElementById('extra-output').innerText = await callGemini(`Forensic Daily Analysis. Data: ${JSON.stringify(cleanEntry)}`); }
+        async function generateWeeklyPlan() { const el = document.getElementById('extra-output'); el.classList.remove('hidden'); let history = Object.keys(State.data).sort().slice(-7).map(k => { const {r_count, ...clean} = State.data[k]; return clean; }); el.innerText = await callGemini(`Weekly IPSRT Plan. History: ${JSON.stringify(history)}`); }
+        function printMedicalReport() { const content = document.getElementById('master-output').innerText; if(!content) return; document.getElementById('print-content').innerText = content; document.getElementById('print-date').innerText = new Date().toLocaleDateString(); window.print(); }
+        async function syncToCloud(action, payload) { if(!State.settings.gasUrl) return; try { await fetch(State.settings.gasUrl, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action, docId: State.settings.docId, ...payload}) }); } catch(e) {} }
+        function archiveToCloud() { const btn = document.getElementById('btn-archive'); btn.innerText = 'جاري...'; syncToCloud('archive_report', { report: State.lastReport }); setTimeout(()=> btn.innerText = 'تم ✅', 2000); }
+        function archivePrivateLog() { const btn = document.getElementById('btn-private-archive'); const currentR = document.getElementById('r_counter_display').innerText; const logText = `🔒 سجل خاص [${State.today}]: العدد = ${currentR}`; btn.innerText = 'جاري...'; syncToCloud('archive_report', { report: logText }); setTimeout(()=> btn.innerText = 'تم ✅', 2000); }
+        function autoDiscover() { const key = document.getElementById('api_key').value; if(!key) return alert('Key?'); fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`).then(r=>r.json()).then(d=>{ const m = d.models?.find(x=>x.supportedGenerationMethods.includes('generateContent'))?.name.replace('models/',''); if(m) { State.settings.apiKey=key; State.settings.model=m; localStorage.setItem(SETTINGS_KEY, JSON.stringify(State.settings)); alert('Linked: '+m); }}); }
+        function saveSettings() { State.settings.apiKey = document.getElementById('api_key').value; State.settings.gasUrl = document.getElementById('gas_url').value; State.settings.docId = document.getElementById('doc_id').value; localStorage.setItem(SETTINGS_KEY, JSON.stringify(State.settings)); alert('Saved'); }
+        function loadSettings() { document.getElementById('api_key').value = State.settings.apiKey; document.getElementById('gas_url').value = State.settings.gasUrl; document.getElementById('doc_id').value = State.settings.docId; }
+    </script>
+</body>
+</html>
+
